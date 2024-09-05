@@ -353,7 +353,7 @@ Scene_Boot.prototype.initialize = function() {
 };
 
 Scene_Boot.prototype.create = function() {
-    GameWindowManager.window.maximize()
+    //GameWindowManager.window.maximize()
     Scene_Base.prototype.create.call(this);
     DataManager.loadDatabase();
     ConfigManager.load();

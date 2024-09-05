@@ -611,7 +611,7 @@ ConfigManager.applyData = function(config) {
     this.alwaysDash = this.readFlag(config, 'alwaysDash');
     this.superSpeed = this.readFlag(config, 'superSpeed');
     this.commandRemember = this.readFlag(config, 'commandRemember');
-    this.fullscreen = this.readFlag(config, 'fullscreen');
+    //this.fullscreen = this.readFlag(config, 'fullscreen');
     this.fps = this.readFlag(config, 'fps');
     this.vsync = this.readFlag(config, 'vsync');
     this.bgmVolume = this.readVolume(config, 'bgmVolume');
@@ -627,9 +627,9 @@ ConfigManager.applyData = function(config) {
     if (config.commandRemember === undefined) {
         this.commandRemember = true;
     }
-    if (config.fullscreen === undefined) {
+    /*if (config.fullscreen === undefined) {
         this.fullscreen = false;
-    }
+    }*/
     if (config.fps === undefined) {
         this.fps = 60.0;
     }

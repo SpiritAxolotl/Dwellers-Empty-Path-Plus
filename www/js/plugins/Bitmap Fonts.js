@@ -82,38 +82,68 @@ function BitmapFontManager() {
     }
     return a;
 }),
-(BitmapFontManager.createFontObject = function (t) {
-    var a = require("path"),
-        e = require("fs"),
-        i = a.dirname(process.mainModule.filename) + ("/fonts/Bitmap Fonts/" + t + "/"),
-        n = e.readdirSync(i);
-    this._fonts[t] = { settings: null, atlases: {} };
-    for (var o = 0; o < n.length; o++) {
-        var s = n[o],
-            r = a.extname(n[o]),
-            p = a.basename(s, r);
-        if ("settings" !== p.toLowerCase())
-            if (".json" !== r) ".png" === r && ImageManager.loadBitmapFontImage(t, p, 0);
-            else {
-                m = JsonEx.parse(e.readFileSync(i + "/" + p + r, "utf8"));
-                this._fonts[t].atlases[p] = this.processAtlasData(m);
-            }
-        else {
-            var m = JsonEx.parse(e.readFileSync(i + "/" + p + r, "utf8"));
-            this._fonts[t].settings = m;
+(BitmapFontManager.createFontObject = function (fontfiles) {
+    const rootpath = "./fonts/Bitmap Fonts/GameFont/";
+    const fontdir = "GameFont";
+    async function fetchFont(filepath) {
+        try {
+            const response = await fetch(filepath);
+            const text = await response.text();
+            const fontData = JsonEx.parse(text, "utf8");
+            return fontData;
+        } catch (error) {
+            console.error(error);
+            throw error;
         }
     }
+    async function iterateFilesystem(this2, files) {
+        for (let i = 0; i < files.length; i++) {
+            let fontfile = rootpath + files[i];
+            let fontfileExt = fontfile.match(/\.[^\.]+$/)[0];
+            let fontfileName = fontfile.split("/").pop().split(".")[0];
+            if ("settings" !== fontfileName.toLowerCase()) {
+                if (fontfileExt === ".png")
+                    ImageManager.loadBitmapFontImage(fontdir, fontfileName, 0);
+                else if (".json" === fontfileExt) {
+                    let fontData = await fetchFont(fontfile);
+                    this2._fonts[fontdir].atlases[fontfileName] = this2.processAtlasData(fontData);
+                }
+            } else {
+                let fontData = await fetchFont(fontfile);
+                this2._fonts[fontdir].settings = fontData;
+            }
+        }
+    }
+    iterateFilesystem(this, fontfiles);
+    this._fonts[fontdir] = { settings: null, atlases: {} };
+    /*fetch(`./fonts/Bitmap Fonts/${t}/`)
+        .then(response => response.text())
+        .then(files => iterateFilesystem(files))
+        .catch(error => console.error(error));
+    */
 }),
 (BitmapFontManager.loadAllBitmapFonts = function () {
-    for (var t = require("path"), a = require("fs"), e = t.dirname(process.mainModule.filename) + "/fonts/Bitmap Fonts/", i = a.readdirSync(e), n = 0; n < i.length; n++) {
-        var o = i[n],
-            s = t.extname(i[n]),
-            r = t.basename(o, s);
-        a.statSync(e + r).isDirectory() && this.createFontObject(o);
-    }
+    //this sucks but we're hardcoding it because of browser bs
+    const files = [
+        "Settings.json",
+        "Temmie_Lettering03.json",
+        "Temmie_Lettering03.png",
+        "Temmie_Lettering04.json",
+        "Temmie_Lettering04.png"
+    ];
+    this.createFontObject(files);
+    /*fetch("./fonts/Bitmap Fonts/")
+        .then(response => response.json())
+        .then(files => {
+            for (const fontfile of files) {
+                if (fontfile.isDirectory)
+                    this.createFontObject(fontfile);
+            }
+        })
+        .catch(error => console.error(error));*/
 }),
 (ImageManager.loadBitmapFontImage = function (t, a, e) {
-    return this.loadBitmap("Fonts/Bitmap Fonts/" + t + "/", a, e, !1);
+    return this.loadBitmap("fonts/Bitmap Fonts/" + t + "/", a, e, !1);
 }),
 (_TDS_.BitmapFonts.Scene_Boot_initialize = Scene_Boot.prototype.initialize),
 (Scene_Boot.prototype.initialize = function () {
