@@ -1105,8 +1105,8 @@ window.onload = function() {
 // document
 //-----------------------------------------------------------------------------
 
-document.body.style['backgroundColor'] = _.params['Background Color'];
+//document.body.style['backgroundColor'] = _.params['Background Color'];
 
-document.body.style['image-rendering'] = _.params['Image Rendering'];
+//document.body.style['image-rendering'] = _.params['Image Rendering'];
 
 })(SRD.GameUpgrade);

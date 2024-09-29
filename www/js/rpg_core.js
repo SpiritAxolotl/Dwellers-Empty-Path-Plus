@@ -2520,7 +2520,7 @@ Graphics._createCanvas = function() {
     this._canvas.id = 'GameCanvas';
     this._canvas.style.display = 'block';
     this._updateCanvas();
-    document.body.appendChild(this._canvas);
+    document.body.insertBefore(this._canvas, document.getElementById("info"));
 };
 
 /**

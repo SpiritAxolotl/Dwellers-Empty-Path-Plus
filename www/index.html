@@ -16,15 +16,24 @@
         <link rel="preload" href="fonts/Bitmap Fonts/GameFont/Temmie_Lettering04.png" as="image">
         <title>Dweller's Empty Path+</title>
         <style>
+            html {
+                width: 100vw;
+                height: 100vh;
+                overflow: auto;
+            }
             #GameCanvas {
                 display: none; /* overwritten with js */
                 image-rendering: pixelated;
                 aspect-ratio: 10 / 9;
+                margin: 0 !important;
+                position: relative !important;
             }
             body {
+                width: 100%;
+                height: 100%;
                 margin: 0;
-                overflow: hidden;
                 background-color: black;
+                justify-content: center;
             }
             #awaitinput {
                 width: 100%;
@@ -49,6 +58,13 @@
             #modeTextBack + div {
                 display: none;
             }
+            #hideinfo {
+                display: inline-block;
+                width: 100%;
+                text-align: center;
+                cursor: pointer;
+                text-decoration: underline;
+            }
             @media screen and (max-width: 960px) {
                 #GameCanvas {
                     width: 100% !important;
@@ -60,6 +76,12 @@
     <body>
         <noscript><article class="alwaysshowarrow">Javascript is required!</article></noscript>
         <div id="awaitinput" style="display:none;"><article class="alwaysshowarrow">Please click anywhere!</article></div>
+        <article id="info">
+            <span id="hideinfo">[Click to hide]</span><br>
+            Controls: Z/Enter, X/Esc, Arrows<br>
+            Original game can be found <a href="https://tuyoki.itch.io/dwellers-empty-path">here</a><br>
+            Mod can be found <a href="https://andrewharn.itch.io/dwellers-empty-path-plus">here</a>
+        </article>
         <script type="text/javascript" src="./js/libs/pixi.js"></script>
         <script type="text/javascript" src="./js/libs/pixi-tilemap.js"></script>
         <script type="text/javascript" src="./js/libs/pixi-picture.js"></script>
