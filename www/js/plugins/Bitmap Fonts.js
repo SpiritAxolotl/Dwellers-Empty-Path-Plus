@@ -148,6 +148,11 @@ function BitmapFontManager() {
         setTimeout(0.25);
         continue;
     }
+    if (!BitmapFontManager._fontsLoaded) {
+        const disclaimer = document.createElement("article");
+        disclaimer.textContent = "Uh oh! The bitmap font failed to load! Please contact @spaxolotl on Discord so he can fix this. If you're on Windows, you can click on one of the links at the bottom to download an executable for the game.";
+        document.body.appendChild(disclaimer);
+    }
 }),
 (_TDS_.BitmapFonts.Bitmap_initialize = Bitmap.prototype.initialize),
 (_TDS_.BitmapFonts.Bitmap_drawText = Bitmap.prototype.drawText),
