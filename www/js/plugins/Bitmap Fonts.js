@@ -122,6 +122,7 @@ function BitmapFontManager() {
     
     await iterateFilesystem(fontfiles);
     this._fonts = fonts;
+    this._fontsLoaded = true;
 }),
 (BitmapFontManager.loadAllBitmapFonts = function () {
     //this sucks but we're hardcoding it because of browser bs
@@ -140,9 +141,13 @@ function BitmapFontManager() {
 }),
 (_TDS_.BitmapFonts.Scene_Boot_initialize = Scene_Boot.prototype.initialize),
 (Scene_Boot.prototype.initialize = function () {
-    _TDS_.BitmapFonts.Scene_Boot_initialize.call(this), BitmapFontManager.loadAllBitmapFonts();
-    //while (!BitmapFontManager._fontsLoaded)
-    //    continue;
+    _TDS_.BitmapFonts.Scene_Boot_initialize.call(this);
+    BitmapFontManager.loadAllBitmapFonts();
+    const timeout = Date.now();
+    while (!BitmapFontManager._fontsLoaded && Date.now()-5000 < timeout) {
+        setTimeout(0.25);
+        continue;
+    }
 }),
 (_TDS_.BitmapFonts.Bitmap_initialize = Bitmap.prototype.initialize),
 (_TDS_.BitmapFonts.Bitmap_drawText = Bitmap.prototype.drawText),
