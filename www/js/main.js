@@ -2,17 +2,17 @@
 // main.js
 //=============================================================================
 
-const div = document.getElementById("awaitinput");
+const awaitinput = document.getElementById("awaitinput");
 const info = document.getElementById("info");
 const hideinfo = document.getElementById("hideinfo");
 document.addEventListener("DOMContentLoaded", function() {
-    div.style.display = "flex";
+    awaitinput.style.display = "flex";
     PluginManager.setup($plugins);
-    hideinfo.addEventListener("click", function(e) {
+    hideinfo.addEventListener("click", function() {
         info.style.display = "none";
     }, {once: true});
-    div.addEventListener("click", function(e) {
-        div.style.display = "none";
+    awaitinput.addEventListener("click", function() {
+        awaitinput.style.display = "none";
         info.style.display = "block";
         SceneManager.run(Scene_Boot);
     }, {once: true});

@@ -143,16 +143,21 @@ function BitmapFontManager() {
 (Scene_Boot.prototype.initialize = function () {
     _TDS_.BitmapFonts.Scene_Boot_initialize.call(this);
     BitmapFontManager.loadAllBitmapFonts();
-    const timeout = Date.now();
-    while (!BitmapFontManager._fontsLoaded && Date.now()-5000 < timeout) {
-        setTimeout(0.25);
-        continue;
-    }
-    if (!BitmapFontManager._fontsLoaded) {
-        const disclaimer = document.createElement("article");
-        disclaimer.textContent = "Uh oh! The bitmap font failed to load! Please contact @spaxolotl on Discord so he can fix this. If you're on Windows, you can click on one of the links at the bottom to download an executable for the game.";
-        document.body.appendChild(disclaimer);
-    }
+    const start = Date.now();
+    const timeout = 5;
+    const g = setInterval(function () {
+        console.log("Fonts loaded?", BitmapFontManager._fontsLoaded);
+        if (BitmapFontManager._fontsLoaded) {
+            clearInterval(g);
+        } else if (start + (timeout*1000) < Date.now()) {
+            console.error("Fonts not loaded");
+            const disclaimer = document.createElement("article");
+            disclaimer.classList.add("important");
+            disclaimer.textContent = "Uh oh! The bitmap font failed to load! Please contact @spaxolotl on Discord so he can fix this. If you're on Windows, you can click on one of the links at the bottom to download an executable for the game.";
+            document.body.insertBefore(disclaimer, document.getElementById("GameCanvas"));
+            clearInterval(g);
+        }
+    }, 250);
 }),
 (_TDS_.BitmapFonts.Bitmap_initialize = Bitmap.prototype.initialize),
 (_TDS_.BitmapFonts.Bitmap_drawText = Bitmap.prototype.drawText),

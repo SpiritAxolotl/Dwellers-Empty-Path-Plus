@@ -16,11 +16,6 @@
         <link rel="preload" href="fonts/Bitmap Fonts/GameFont/Temmie_Lettering04.png" as="image">
         <title>Dweller's Empty Path+</title>
         <style>
-            html {
-                width: 100vw;
-                height: 100vh;
-                overflow: auto;
-            }
             #GameCanvas {
                 display: none; /* overwritten with js */
                 image-rendering: pixelated;
@@ -29,11 +24,8 @@
                 position: relative !important;
             }
             body {
-                width: 100%;
-                height: 100%;
-                margin: 0;
-                background-color: black;
                 justify-content: center;
+                margin: 5px 0;
             }
             #awaitinput {
                 width: 100%;
@@ -42,6 +34,8 @@
                 align-items: center;
                 justify-content: center;
                 text-align: center;
+                flex-flow: column;
+                gap: 50px;
                 z-index: 1001;
                 font-family: DEP;
                 color: var(--g1);
@@ -65,6 +59,9 @@
                 cursor: pointer;
                 text-decoration: underline;
             }
+            #hideforever {
+                cursor: pointer;
+            }
             @media screen and (max-width: 960px) {
                 #GameCanvas {
                     width: 100% !important;
@@ -75,7 +72,21 @@
     </head>
     <body>
         <noscript><article class="alwaysshowarrow">Javascript is required!</article></noscript>
-        <div id="awaitinput" style="display:none;"><article class="alwaysshowarrow">Please click anywhere!</article></div>
+        <div id="awaitinput" style="display:none;">
+            <article class="alwaysshowarrow" style="line-height:27px;">
+                NOTE:<br>
+                This game was made by Temmie Chang, not Spax. I am hosting the game on my
+                website because another webport does not exist, and my website is already
+                themed after it, so it felt fitting to host it here.<br>
+                The original game can be found at
+                <u>https://tuyoki.itch.io/dwellers-empty-path</u><br>
+                And the QoL mod I'm hosting here can be found at
+                <u>https://andrewharn.itch.io/dwellers-empty-path-plus</u><br>
+                Both are directly linked at the bottom of the page once this message dismisses.
+                You can click anywhere to start.<br>
+                Enjoy the game!
+            </article>
+        </div>
         <article id="info" style="display:none;">
             <span id="hideinfo">[Click to hide]</span><br>
             Controls: Z/Enter, X/Esc, Arrow Keys, Shift<br>
