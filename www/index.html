@@ -2,30 +2,77 @@
 <html>
     <head>
         <meta charset="UTF-8">
+        <meta name="theme-color" content="#306850">
         <meta name="apple-mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
         <meta name="viewport" content="user-scalable=yes">
-        <link rel="icon" href="icon/icon.png" type="image/png">
-        <link rel="apple-touch-icon" href="icon/icon.png">
-        <link rel="stylesheet" type="text/css" href="fonts/gamefont.css">
+        <link rel="icon" href="./icon/icon.png" type="image/png">
+        <link rel="apple-touch-icon" href="./icon/icon.png">
+        <link rel="stylesheet" type="text/css" href="https://spax.zone/css/experimental.css">
+        <link rel="preload" href="fonts/Bitmap Fonts/GameFont/Settings.json" as="fetch" crossorigin>
+        <link rel="preload" href="fonts/Bitmap Fonts/GameFont/Temmie_Lettering03.json" as="fetch" crossorigin>
+        <link rel="preload" href="fonts/Bitmap Fonts/GameFont/Temmie_Lettering03.png" as="image">
+        <link rel="preload" href="fonts/Bitmap Fonts/GameFont/Temmie_Lettering04.json" as="fetch" crossorigin>
+        <link rel="preload" href="fonts/Bitmap Fonts/GameFont/Temmie_Lettering04.png" as="image">
         <title>Dweller's Empty Path+</title>
+        <style>
+            #GameCanvas {
+                display: none; /* overwritten with js */
+                image-rendering: pixelated;
+                aspect-ratio: 10 / 9;
+            }
+            body {
+                margin: 0;
+                overflow: hidden;
+                background-color: black;
+            }
+            #awaitinput {
+                width: 100%;
+                height: 100%;
+                position: absolute;
+                align-items: center;
+                justify-content: center;
+                text-align: center;
+                z-index: 1001;
+                font-family: DEP;
+                color: var(--g1);
+                cursor: default;
+            }
+            #ErrorPrinter {
+                overflow-y: auto;
+                max-height: min-content;
+                max-width: min-content;
+            }
+            #modeTextBack,
+            #GameVideo,
+            #UpperCanvas,
+            #modeTextBack + div {
+                display: none;
+            }
+            @media screen and (max-width: 960px) {
+                #GameCanvas {
+                    width: 100% !important;
+                    height: unset !important;
+                }
+            }
+        </style>
     </head>
-    <body style="background-color: black">
-        <script type="text/javascript" src="js/libs/pixi.js"></script>
-        <script type="text/javascript" src="js/libs/pixi-tilemap.js"></script>
-        <script type="text/javascript" src="js/libs/pixi-picture.js"></script>
-        <script type="text/javascript" src="js/libs/fpsmeter.js"></script>
-        <script type="text/javascript" src="js/libs/lz-string.js"></script>
-        <script type="text/javascript" src="js/libs/iphone-inline-video.browser.js"></script>
-        <script type="text/javascript" src="js/rpg_core.js"></script>
-        <script type="text/javascript" src="js/rpg_managers.js"></script>
-        <script type="text/javascript" src="js/rpg_objects.js"></script>
-        <script type="text/javascript" src="js/rpg_scenes.js"></script>
-        <script type="text/javascript" src="js/rpg_sprites.js"></script>
-        <script type="text/javascript" src="js/rpg_windows.js"></script>
-        <script type="text/javascript" src="js/plugins.js"></script>
-        <script type="text/javascript" src="js/main.js"></script>
-		<style type="text/css"> CANVAS{image-rendering: pixelated;} </style>
-		<style> body { overflow: hidden; /* Hide scrollbars */ } </style>
+    <body>
+        <noscript><article class="alwaysshowarrow">Javascript is required!</article></noscript>
+        <div id="awaitinput" style="display:none;"><article class="alwaysshowarrow">Please click anywhere!</article></div>
+        <script type="text/javascript" src="./js/libs/pixi.js"></script>
+        <script type="text/javascript" src="./js/libs/pixi-tilemap.js"></script>
+        <script type="text/javascript" src="./js/libs/pixi-picture.js"></script>
+        <script type="text/javascript" src="./js/libs/fpsmeter.js"></script>
+        <script type="text/javascript" src="./js/libs/lz-string.js"></script>
+        <script type="text/javascript" src="./js/libs/iphone-inline-video.browser.js"></script>
+        <script type="text/javascript" src="./js/rpg_core.js"></script>
+        <script type="text/javascript" src="./js/rpg_managers.js"></script>
+        <script type="text/javascript" src="./js/rpg_objects.js"></script>
+        <script type="text/javascript" src="./js/rpg_scenes.js"></script>
+        <script type="text/javascript" src="./js/rpg_sprites.js"></script>
+        <script type="text/javascript" src="./js/rpg_windows.js"></script>
+        <script type="text/javascript" src="./js/plugins.js"></script>
+        <script type="text/javascript" src="./js/main.js"></script>
     </body>
 </html>

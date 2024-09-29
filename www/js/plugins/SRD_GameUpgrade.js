@@ -1091,12 +1091,12 @@ Scene_MenuBase.prototype.initialize = function() {
 // window
 //-----------------------------------------------------------------------------
 
-_.window_onload = window.onload;
+//_.window_onload = window.onload;
 window.onload = function() {
 	if(!_.isNewNWjs && _.params['Game Reconstruction (1.5.X & below)'] && GameWindowManager.isWindowOriginal()) {
 		GameWindowManager.startGameTransition();
 	} else {
-		_.window_onload.apply(this, arguments);
+		//_.window_onload.apply(this, arguments);
 		SRD.onWindowLoad();
 	}
 };

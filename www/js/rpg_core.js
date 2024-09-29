@@ -2518,6 +2518,7 @@ Graphics._updateErrorPrinter = function() {
 Graphics._createCanvas = function() {
     this._canvas = document.createElement('canvas');
     this._canvas.id = 'GameCanvas';
+    this._canvas.style.display = 'block';
     this._updateCanvas();
     document.body.appendChild(this._canvas);
 };
