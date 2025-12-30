@@ -82,68 +82,43 @@ function BitmapFontManager() {
     }
     return a;
 }),
-(BitmapFontManager.createFontObject = function (fontfiles) {
-    const rootpath = "./fonts/Bitmap Fonts/GameFont/";
-    const fontdir = "GameFont";
-    async function fetchFont(filepath) {
-        try {
-            const response = await fetch(filepath);
-            const text = await response.text();
-            const fontData = JsonEx.parse(text, "utf8");
-            return fontData;
-        } catch (error) {
-            console.error(error);
-            throw error;
-        }
-    }
-    async function iterateFilesystem(this2, files) {
-        for (let i = 0; i < files.length; i++) {
-            let fontfile = rootpath + files[i];
-            let fontfileExt = fontfile.match(/\.[^\.]+$/)[0];
-            let fontfileName = fontfile.split("/").pop().split(".")[0];
-            if ("settings" !== fontfileName.toLowerCase()) {
-                if (fontfileExt === ".png")
-                    ImageManager.loadBitmapFontImage(fontdir, fontfileName, 0);
-                else if (".json" === fontfileExt) {
-                    let fontData = await fetchFont(fontfile);
-                    this2._fonts[fontdir].atlases[fontfileName] = this2.processAtlasData(fontData);
+(BitmapFontManager.createFontObject = function (t) {
+    var a = require("path"),
+        e = require("fs"),
+        i = a.dirname(require.main.filename) + ("/fonts/Bitmap Fonts/" + t + "/"),
+        n = e.readdirSync(i);
+    this._fonts[t] = { settings: null, atlases: {} };
+    for (var o = 0; o < n.length; o++) {
+        var s = n[o],
+            r = a.extname(n[o]),
+            p = a.basename(s, r);
+        if ("settings" !== p.toLowerCase())
+            if (r !== ".json") {
+                if (r === ".png") {
+                    ImageManager.loadBitmapFontImage(t, p, 0);
                 }
             } else {
-                let fontData = await fetchFont(fontfile);
-                this2._fonts[fontdir].settings = fontData;
+                m = JsonEx.parse(e.readFileSync(i + "/" + p + r, "utf8"));
+                this._fonts[t].atlases[p] = this.processAtlasData(m);
             }
+        else {
+            var m = JsonEx.parse(e.readFileSync(i + "/" + p + r, "utf8"));
+            this._fonts[t].settings = m;
         }
     }
-    iterateFilesystem(this, fontfiles);
-    this._fonts[fontdir] = { settings: null, atlases: {} };
-    /*fetch(`./fonts/Bitmap Fonts/${t}/`)
-        .then(response => response.text())
-        .then(files => iterateFilesystem(files))
-        .catch(error => console.error(error));
-    */
 }),
 (BitmapFontManager.loadAllBitmapFonts = function () {
-    //this sucks but we're hardcoding it because of browser bs
-    const files = [
-        "Settings.json",
-        "Temmie_Lettering03.json",
-        "Temmie_Lettering03.png",
-        "Temmie_Lettering04.json",
-        "Temmie_Lettering04.png"
-    ];
-    this.createFontObject(files);
-    /*fetch("./fonts/Bitmap Fonts/")
-        .then(response => response.json())
-        .then(files => {
-            for (const fontfile of files) {
-                if (fontfile.isDirectory)
-                    this.createFontObject(fontfile);
-            }
-        })
-        .catch(error => console.error(error));*/
+    for (var t = require("path"), a = require("fs"), e = t.dirname(require.main.filename) + "/fonts/Bitmap Fonts/", i = a.readdirSync(e), n = 0; n < i.length; n++) {
+        var o = i[n],
+            s = t.extname(i[n]),
+            r = t.basename(o, s);
+        if (a.statSync(e + r).isDirectory()) {
+            this.createFontObject(o);
+        }
+    }
 }),
 (ImageManager.loadBitmapFontImage = function (t, a, e) {
-    return this.loadBitmap("fonts/Bitmap Fonts/" + t + "/", a, e, !1);
+    return this.loadBitmap("fonts/Bitmap Fonts/" + t + "/", a, e, false);
 }),
 (_TDS_.BitmapFonts.Scene_Boot_initialize = Scene_Boot.prototype.initialize),
 (Scene_Boot.prototype.initialize = function () {
@@ -153,7 +128,7 @@ function BitmapFontManager() {
 (_TDS_.BitmapFonts.Bitmap_drawText = Bitmap.prototype.drawText),
 (_TDS_.BitmapFonts.Bitmap_measureTextWidth = Bitmap.prototype.measureTextWidth),
 (Bitmap.prototype.initialize = function (t, a) {
-    _TDS_.BitmapFonts.Bitmap_initialize.call(this, t, a), (this._bitmapFont = null), (this._useBitmapFont = !0), (this._bitmapFontColor = null);
+    _TDS_.BitmapFonts.Bitmap_initialize.call(this, t, a), (this._bitmapFont = null), (this._useBitmapFont = true), (this._bitmapFontColor = null);
 }),
 Object.defineProperty(Bitmap.prototype, "bitmapFontColor", {
     get: function () {
@@ -162,19 +137,19 @@ Object.defineProperty(Bitmap.prototype, "bitmapFontColor", {
     set: function (t) {
         Array.isArray(t) ? t.equals(this._bitmapFontColor) || ((this._bitmapFontColor = t), this.updateBitmapFont()) : this._bitmapFontColor !== t && ((this._bitmapFontColor = t), this.updateBitmapFont());
     },
-    configurable: !0,
+    configurable: true,
 }),
 (Bitmap.prototype.isUsingBitmapFont = function () {
     return this._useBitmapFont;
 }),
-(Bitmap.prototype.measureTextWidth = function (t, a = !1) {
+(Bitmap.prototype.measureTextWidth = function (t, a = false) {
     return this.isUsingBitmapFont() ? this.measureBitmapFontText(t, a).width : _TDS_.BitmapFonts.Bitmap_measureTextWidth.call(this, t);
 }),
-(Bitmap.prototype.measureBitmapFontText = function (t, a = !1) {
+(Bitmap.prototype.measureBitmapFontText = function (t, a = false) {
     a && this.updateBitmapFont();
     var e = { width: 0, height: 0 },
         i = this._bitmapFont;
-    if (i && void 0 !== t) {
+    if (i && t !== undefined) {
         e.height = i.fontHeight;
         for (var n = t.toString().split(""), o = 0; o < n.length; o++) {
             var s = i.atlas.characters[n[o]];
@@ -197,7 +172,7 @@ Object.defineProperty(Bitmap.prototype, "bitmapFontColor", {
 (Bitmap.prototype.drawBitmapFontText = function (t, a, e, i, n, o) {
     this.updateBitmapFont();
     var s = this._bitmapFont;
-    if (s && void 0 !== t) {
+    if (s && t !== undefined) {
         var r = s.bitmap,
             p = a,
             m = e + n - (n - 0.7 * s.fontHeight) / 2;
