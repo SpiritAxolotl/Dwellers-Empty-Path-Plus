@@ -505,7 +505,6 @@ function ConfigManager() {
 }
 
 ConfigManager.alwaysDash        = false;
-ConfigManager.superSpeed        = false;
 ConfigManager.commandRemember   = false;
 ConfigManager.fps               = 0.0;
 ConfigManager.vsync             = false;
@@ -595,7 +594,6 @@ ConfigManager.save = function() {
 ConfigManager.makeData = function() {
     var config = {};
     config.alwaysDash = this.alwaysDash;
-    config.superSpeed = this.superSpeed;
     config.commandRemember = this.commandRemember;
     config.fullscreen = this.fullscreen;
     config.fps = this.fps;
@@ -609,7 +607,6 @@ ConfigManager.makeData = function() {
 
 ConfigManager.applyData = function(config) {
     this.alwaysDash = this.readFlag(config, 'alwaysDash');
-    this.superSpeed = this.readFlag(config, 'superSpeed');
     this.commandRemember = this.readFlag(config, 'commandRemember');
     //this.fullscreen = this.readFlag(config, 'fullscreen');
     this.fps = this.readFlag(config, 'fps');
@@ -620,9 +617,6 @@ ConfigManager.applyData = function(config) {
     this.seVolume = this.readVolume(config, 'seVolume');
     if (config.alwaysDash === undefined) {
         this.alwaysDash = false;
-    }
-    if (config.superSpeed === undefined) {
-        this.superSpeed = false;
     }
     if (config.commandRemember === undefined) {
         this.commandRemember = true;
@@ -1809,7 +1803,6 @@ Object.defineProperties(TextManager, {
     buy             : TextManager.getter('command', 24),
     sell            : TextManager.getter('command', 25),
     alwaysDash      : TextManager.getter('message', 'alwaysDash'),
-    superSpeed      : TextManager.getter('message', 'superSpeed'),
     commandRemember : TextManager.getter('message', 'commandRemember'),
     fullscreen      : TextManager.getter('message', 'fullscreen'),
     fps             : TextManager.getter('message', 'fps'),

@@ -2675,7 +2675,6 @@ Window_Options.prototype.addGeneralOptions = function() {
     // this.addCommand(TextManager.fps, 'fps');
     this.addCommand(TextManager.vsync, 'vsync');
     this.addCommand(TextManager.alwaysDash, 'alwaysDash');
-    this.addCommand(TextManager.superSpeed, 'superSpeed');
     this.addCommand(TextManager.commandRemember, 'commandRemember');
     this.addCommand(TextManager.cancel, 'cancel');
 };
