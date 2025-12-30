@@ -174,52 +174,114 @@ BitmapFontManager.processAtlasData = function(atlasData) {
  * Create font object from font directory
  */
 BitmapFontManager.createFontObject = function(fontName) {
-    var path = require("path");
-    var fs = require("fs");
-    var fontDirectory = path.dirname(require.main.filename) + "/fonts/Bitmap Fonts/" + fontName + "/";
-    var files = fs.readdirSync(fontDirectory);
+    var fontDirectory = "fonts/Bitmap Fonts/" + fontName + "/";
+    
+    var files = [
+        { type: "settings", name: "Settings", ext: ".json" },
+        { type: "atlas", name: "Temmie_Lettering03", ext: ".json" },
+        { type: "image", name: "Temmie_Lettering03", ext: ".png" },
+        { type: "atlas", name: "Temmie_Lettering04", ext: ".json" },
+        { type: "image", name: "Temmie_Lettering04", ext: ".png" }
+    ];
     
     this._fonts[fontName] = {
         settings: null,
-        atlases: {}
+        atlases: {},
+        _pendingLoads: files.filter(f => f.ext === ".json").length
     };
     
     for (var i = 0; i < files.length; i++) {
-        var fileName = files[i];
-        var extension = path.extname(files[i]);
-        var baseName = path.basename(fileName, extension);
+        var file = files[i];
         
-        if (baseName.toLowerCase() !== "settings") {
-            if (extension === ".json") {
-                var jsonData = JsonEx.parse(fs.readFileSync(fontDirectory + "/" + baseName + extension, "utf8"));
-                this._fonts[fontName].atlases[baseName] = this.processAtlasData(jsonData);
-            } else if (extension === ".png") {
-                ImageManager.loadBitmapFontImage(fontName, baseName, 0);
+        if (file.ext === ".json") {
+            var dataName = "$dataBitmapFont_" + fontName + "_" + file.name;
+            window[dataName] = null;
+            
+            // Load the JSON file
+            DataManager.loadDataFile(dataName, "Bitmap Fonts/" + fontName + "/" + file.name + file.ext);
+            
+            // Store reference for later processing
+            if (file.type === "settings") {
+                this._fonts[fontName]._settingsDataName = dataName;
+            } else if (file.type === "atlas") {
+                if (!this._fonts[fontName]._atlasDataNames) {
+                    this._fonts[fontName]._atlasDataNames = {};
+                }
+                this._fonts[fontName]._atlasDataNames[file.name] = dataName;
             }
-        } else {
-            var settingsData = JsonEx.parse(fs.readFileSync(fontDirectory + "/" + baseName + extension, "utf8"));
-            this._fonts[fontName].settings = settingsData;
+        } else if (file.ext === ".png") {
+            // Images can be loaded immediately
+            ImageManager.loadBitmapFontImage(fontName, file.name, 0);
         }
     }
+};
+
+/**
+ * Process loaded font data (call this after data is loaded)
+ */
+BitmapFontManager.processLoadedFontData = function(fontName) {
+    var fontData = this._fonts[fontName];
+    if (!fontData) return false;
+    
+    // Check if settings are loaded
+    if (fontData._settingsDataName) {
+        var settingsData = window[fontData._settingsDataName];
+        if (settingsData) {
+            fontData.settings = settingsData;
+        } else {
+            return false; // Not ready yet
+        }
+    }
+    
+    // Check if atlases are loaded
+    if (fontData._atlasDataNames) {
+        var atlasNames = Object.keys(fontData._atlasDataNames);
+        for (var i = 0; i < atlasNames.length; i++) {
+            var atlasName = atlasNames[i];
+            var dataName = fontData._atlasDataNames[atlasName];
+            var atlasData = window[dataName];
+            
+            if (atlasData) {
+                fontData.atlases[atlasName] = this.processAtlasData(atlasData);
+            } else {
+                return false; // Not ready yet
+            }
+        }
+    }
+    
+    // Clean up temporary data
+    delete fontData._settingsDataName;
+    delete fontData._atlasDataNames;
+    delete fontData._pendingLoads;
+    
+    return true; // All data loaded successfully
+};
+
+/**
+ * Check if all fonts are loaded
+ */
+BitmapFontManager.isReady = function() {
+    var fontNames = Object.keys(this._fonts);
+    for (var i = 0; i < fontNames.length; i++) {
+        var fontData = this._fonts[fontNames[i]];
+        if (fontData._pendingLoads !== undefined) {
+            // Font still has pending loads, try to process
+            if (!this.processLoadedFontData(fontNames[i])) {
+                return false;
+            }
+        }
+    }
+    return true;
 };
 
 /**
  * Load all bitmap fonts from directory
  */
 BitmapFontManager.loadAllBitmapFonts = function() {
-    var path = require("path");
-    var fs = require("fs");
-    var fontsDirectory = path.dirname(require.main.filename) + "/fonts/Bitmap Fonts/";
-    var fontFolders = fs.readdirSync(fontsDirectory);
+    var fontFolders = ["GameFont"];
     
     for (var i = 0; i < fontFolders.length; i++) {
-        var folderName = fontFolders[i];
-        var extension = path.extname(fontFolders[i]);
-        var baseName = path.basename(folderName, extension);
-        
-        if (fs.statSync(fontsDirectory + baseName).isDirectory()) {
-            this.createFontObject(folderName);
-        }
+        this.createFontObject(fontFolders[i]);
     }
 };
 
@@ -235,10 +297,18 @@ ImageManager.loadBitmapFontImage = function(fontName, imageName, hue) {
 //=============================================================================
 
 _TDS_.BitmapFonts.Scene_Boot_initialize = Scene_Boot.prototype.initialize;
+_TDS_.BitmapFonts.Scene_Boot_isReady = Scene_Boot.prototype.isReady;
 
 Scene_Boot.prototype.initialize = function() {
     _TDS_.BitmapFonts.Scene_Boot_initialize.call(this);
     BitmapFontManager.loadAllBitmapFonts();
+};
+
+Scene_Boot.prototype.isReady = function() {
+    if (!_TDS_.BitmapFonts.Scene_Boot_isReady.call(this)) {
+        return false;
+    }
+    return BitmapFontManager.isReady();
 };
 
 //=============================================================================
