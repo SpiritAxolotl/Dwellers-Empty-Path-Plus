@@ -9,8 +9,17 @@
         <link rel="apple-touch-icon" href="icon/icon.png">
         <link rel="stylesheet" type="text/css" href="fonts/gamefont.css">
         <title>Dweller's Empty Path+</title>
+        <style type="text/css">
+            canvas {
+                image-rendering: pixelated;
+            }
+            body {
+                overflow: hidden;
+                background-color: black;
+            }
+        </style>
     </head>
-    <body style="background-color: black">
+    <body>
         <script type="text/javascript" src="js/libs/pixi.js"></script>
         <script type="text/javascript" src="js/libs/pixi-tilemap.js"></script>
         <script type="text/javascript" src="js/libs/pixi-picture.js"></script>
@@ -25,7 +34,5 @@
         <script type="text/javascript" src="js/rpg_windows.js"></script>
         <script type="text/javascript" src="js/plugins.js"></script>
         <script type="text/javascript" src="js/main.js"></script>
-		<style type="text/css"> CANVAS{image-rendering: pixelated;} </style>
-		<style> body { overflow: hidden; /* Hide scrollbars */ } </style>
     </body>
 </html>
