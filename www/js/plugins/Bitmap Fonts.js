@@ -33,193 +33,422 @@ _TDS_.BitmapFonts = _TDS_.BitmapFonts || {};
  *    \BC[255,0,0]Show me some RED!\BC[]And Now back to normal.
  */
 //=============================================================================
+
 function BitmapFontManager() {
     throw new Error("This is a static class");
 }
-(BitmapFontManager._fonts = {}),
-(BitmapFontManager.doesBitmapFontExist = function (t) {
-    return void 0 !== this._fonts[t];
-}),
-(BitmapFontManager.getFontData = function (t) {
-    return this._fonts[t];
-}),
-(BitmapFontManager.hexToRGB = function (t, a) {
-    return (t = t.replace("#", "")), [parseInt(t.substring(0, 2), 16), parseInt(t.substring(2, 4), 16), parseInt(t.substring(4, 6), 16)];
-}),
-(BitmapFontManager.makeBitmapFontObject = function (t, a, e) {
-    null == e && (e = []);
-    var i = { name: t, size: a, color: e },
-        n = this._fonts[t];
-    if (n)
-        for (var o = Object.keys(n.settings.fonts), s = 0; s < o.length; s++) {
-            var r = o[s],
-                p = n.settings.fonts[r].fontRange,
-                m = n.settings.fonts[r].forceTone;
-            if (a >= p[0] && a <= p[1]) {
-                if (((i.atlas = n.atlases[r]), e.length > 0)) {
-                    var h = ImageManager.loadBitmapFontImage(t, n.atlases[r].bitmapName),
-                        c = new Bitmap(h.width, h.height);
-                    c.blt(h, 0, 0, h.width, h.height, 0, 0), m ? c.forceTone(e[0], e[1], e[2]) : c.adjustTone(e[0], e[1], e[2]), (i.bitmap = c);
-                } else i.bitmap = ImageManager.loadBitmapFontImage(t, n.atlases[r].bitmapName);
-                (i.fontHeight = n.settings.fonts[r].fontHeight), (i.spaceWidth = n.settings.fonts[r].spaceWidth);
+
+// Initialize fonts storage
+BitmapFontManager._fonts = {};
+
+/**
+ * Check if a bitmap font exists
+ */
+BitmapFontManager.doesBitmapFontExist = function(fontName) {
+    return this._fonts[fontName] !== undefined;
+};
+
+/**
+ * Get font data by name
+ */
+BitmapFontManager.getFontData = function(fontName) {
+    return this._fonts[fontName];
+};
+
+/**
+ * Convert hex color to RGB array
+ */
+BitmapFontManager.hexToRGB = function(hexColor, alpha) {
+    hexColor = hexColor.replace("#", "");
+    return [
+        parseInt(hexColor.substring(0, 2), 16),
+        parseInt(hexColor.substring(2, 4), 16),
+        parseInt(hexColor.substring(4, 6), 16)
+    ];
+};
+
+/**
+ * Create a bitmap font object with specified parameters
+ */
+BitmapFontManager.makeBitmapFontObject = function(fontName, fontSize, colorTone) {
+    if (colorTone == null) {
+        colorTone = [];
+    }
+    
+    var fontObject = {
+        name: fontName,
+        size: fontSize,
+        color: colorTone
+    };
+    
+    var fontData = this._fonts[fontName];
+    
+    if (fontData) {
+        var fontKeys = Object.keys(fontData.settings.fonts);
+        
+        for (var i = 0; i < fontKeys.length; i++) {
+            var fontKey = fontKeys[i];
+            var fontRange = fontData.settings.fonts[fontKey].fontRange;
+            var forceTone = fontData.settings.fonts[fontKey].forceTone;
+            
+            // Check if font size is within range
+            if (fontSize >= fontRange[0] && fontSize <= fontRange[1]) {
+                fontObject.atlas = fontData.atlases[fontKey];
+                
+                // Apply color tone if specified
+                if (colorTone.length > 0) {
+                    var originalBitmap = ImageManager.loadBitmapFontImage(fontName, fontData.atlases[fontKey].bitmapName);
+                    var tintedBitmap = new Bitmap(originalBitmap.width, originalBitmap.height);
+                    
+                    tintedBitmap.blt(originalBitmap, 0, 0, originalBitmap.width, originalBitmap.height, 0, 0);
+                    
+                    if (forceTone) {
+                        tintedBitmap.forceTone(colorTone[0], colorTone[1], colorTone[2]);
+                    } else {
+                        tintedBitmap.adjustTone(colorTone[0], colorTone[1], colorTone[2]);
+                    }
+                    
+                    fontObject.bitmap = tintedBitmap;
+                } else {
+                    fontObject.bitmap = ImageManager.loadBitmapFontImage(fontName, fontData.atlases[fontKey].bitmapName);
+                }
+                
+                fontObject.fontHeight = fontData.settings.fonts[fontKey].fontHeight;
+                fontObject.spaceWidth = fontData.settings.fonts[fontKey].spaceWidth;
                 break;
             }
         }
-    return i;
-}),
-(BitmapFontManager.processAtlasData = function (t) {
-    for (
-        var a = { characters: {}, bitmapName: t.meta.image.slice(0, -4) },
-            e = { _scx0: " ", _scx1: "\\", _scx2: "/", _scx3: ":", _scx4: "*", _scx5: "?", _scx6: "<", _scx7: ">", _scx8: "|", _scx9: ".", _scx10: '"' },
-            i = Object.keys(t.frames),
-            n = 0;
-        n < i.length;
-        n++
-    ) {
-        var o = i[n].slice(0, -4),
-            s = t.frames[i[n]];
-        2 === (o = e[o] ? e[o] : o).length && (o = o[0].toLowerCase()), (a.characters[o] = {}), (a.characters[o].rect = s.frame), (a.characters[o].originalRect = s.spriteSourceSize), (a.characters[o].sourceSize = s.sourceSize);
     }
-    return a;
-}),
-(BitmapFontManager.createFontObject = function (t) {
-    var a = require("path"),
-        e = require("fs"),
-        i = a.dirname(require.main.filename) + ("/fonts/Bitmap Fonts/" + t + "/"),
-        n = e.readdirSync(i);
-    this._fonts[t] = { settings: null, atlases: {} };
-    for (var o = 0; o < n.length; o++) {
-        var s = n[o],
-            r = a.extname(n[o]),
-            p = a.basename(s, r);
-        if ("settings" !== p.toLowerCase())
-            if (r !== ".json") {
-                if (r === ".png") {
-                    ImageManager.loadBitmapFontImage(t, p, 0);
-                }
-            } else {
-                m = JsonEx.parse(e.readFileSync(i + "/" + p + r, "utf8"));
-                this._fonts[t].atlases[p] = this.processAtlasData(m);
+    
+    return fontObject;
+};
+
+/**
+ * Process atlas data from JSON
+ */
+BitmapFontManager.processAtlasData = function(atlasData) {
+    var processedAtlas = {
+        characters: {},
+        bitmapName: atlasData.meta.image.slice(0, -4)
+    };
+    
+    // Special character mappings for file system compatibility
+    var specialCharMap = {
+        _scx0: " ",
+        _scx1: "\\",
+        _scx2: "/",
+        _scx3: ":",
+        _scx4: "*",
+        _scx5: "?",
+        _scx6: "<",
+        _scx7: ">",
+        _scx8: "|",
+        _scx9: ".",
+        _scx10: '"'
+    };
+    
+    var frameKeys = Object.keys(atlasData.frames);
+    
+    for (var i = 0; i < frameKeys.length; i++) {
+        var charKey = frameKeys[i].slice(0, -4);
+        var frameData = atlasData.frames[frameKeys[i]];
+        
+        // Map special characters
+        charKey = specialCharMap[charKey] ? specialCharMap[charKey] : charKey;
+        
+        // Handle two-character keys
+        if (charKey.length === 2) {
+            charKey = charKey[0].toLowerCase();
+        }
+        
+        processedAtlas.characters[charKey] = {};
+        processedAtlas.characters[charKey].rect = frameData.frame;
+        processedAtlas.characters[charKey].originalRect = frameData.spriteSourceSize;
+        processedAtlas.characters[charKey].sourceSize = frameData.sourceSize;
+    }
+    
+    return processedAtlas;
+};
+
+/**
+ * Create font object from font directory
+ */
+BitmapFontManager.createFontObject = function(fontName) {
+    var path = require("path");
+    var fs = require("fs");
+    var fontDirectory = path.dirname(require.main.filename) + "/fonts/Bitmap Fonts/" + fontName + "/";
+    var files = fs.readdirSync(fontDirectory);
+    
+    this._fonts[fontName] = {
+        settings: null,
+        atlases: {}
+    };
+    
+    for (var i = 0; i < files.length; i++) {
+        var fileName = files[i];
+        var extension = path.extname(files[i]);
+        var baseName = path.basename(fileName, extension);
+        
+        if (baseName.toLowerCase() !== "settings") {
+            if (extension === ".json") {
+                var jsonData = JsonEx.parse(fs.readFileSync(fontDirectory + "/" + baseName + extension, "utf8"));
+                this._fonts[fontName].atlases[baseName] = this.processAtlasData(jsonData);
+            } else if (extension === ".png") {
+                ImageManager.loadBitmapFontImage(fontName, baseName, 0);
             }
-        else {
-            var m = JsonEx.parse(e.readFileSync(i + "/" + p + r, "utf8"));
-            this._fonts[t].settings = m;
+        } else {
+            var settingsData = JsonEx.parse(fs.readFileSync(fontDirectory + "/" + baseName + extension, "utf8"));
+            this._fonts[fontName].settings = settingsData;
         }
     }
-}),
-(BitmapFontManager.loadAllBitmapFonts = function () {
-    for (var t = require("path"), a = require("fs"), e = t.dirname(require.main.filename) + "/fonts/Bitmap Fonts/", i = a.readdirSync(e), n = 0; n < i.length; n++) {
-        var o = i[n],
-            s = t.extname(i[n]),
-            r = t.basename(o, s);
-        if (a.statSync(e + r).isDirectory()) {
-            this.createFontObject(o);
+};
+
+/**
+ * Load all bitmap fonts from directory
+ */
+BitmapFontManager.loadAllBitmapFonts = function() {
+    var path = require("path");
+    var fs = require("fs");
+    var fontsDirectory = path.dirname(require.main.filename) + "/fonts/Bitmap Fonts/";
+    var fontFolders = fs.readdirSync(fontsDirectory);
+    
+    for (var i = 0; i < fontFolders.length; i++) {
+        var folderName = fontFolders[i];
+        var extension = path.extname(fontFolders[i]);
+        var baseName = path.basename(folderName, extension);
+        
+        if (fs.statSync(fontsDirectory + baseName).isDirectory()) {
+            this.createFontObject(folderName);
         }
     }
-}),
-(ImageManager.loadBitmapFontImage = function (t, a, e) {
-    return this.loadBitmap("fonts/Bitmap Fonts/" + t + "/", a, e, false);
-}),
-(_TDS_.BitmapFonts.Scene_Boot_initialize = Scene_Boot.prototype.initialize),
-(Scene_Boot.prototype.initialize = function () {
-    _TDS_.BitmapFonts.Scene_Boot_initialize.call(this), BitmapFontManager.loadAllBitmapFonts();
-}),
-(_TDS_.BitmapFonts.Bitmap_initialize = Bitmap.prototype.initialize),
-(_TDS_.BitmapFonts.Bitmap_drawText = Bitmap.prototype.drawText),
-(_TDS_.BitmapFonts.Bitmap_measureTextWidth = Bitmap.prototype.measureTextWidth),
-(Bitmap.prototype.initialize = function (t, a) {
-    _TDS_.BitmapFonts.Bitmap_initialize.call(this, t, a), (this._bitmapFont = null), (this._useBitmapFont = true), (this._bitmapFontColor = null);
-}),
+};
+
+/**
+ * Load bitmap font image
+ */
+ImageManager.loadBitmapFontImage = function(fontName, imageName, hue) {
+    return this.loadBitmap("fonts/Bitmap Fonts/" + fontName + "/", imageName, hue, false);
+};
+
+//=============================================================================
+// Scene_Boot
+//=============================================================================
+
+_TDS_.BitmapFonts.Scene_Boot_initialize = Scene_Boot.prototype.initialize;
+
+Scene_Boot.prototype.initialize = function() {
+    _TDS_.BitmapFonts.Scene_Boot_initialize.call(this);
+    BitmapFontManager.loadAllBitmapFonts();
+};
+
+//=============================================================================
+// Bitmap
+//=============================================================================
+
+_TDS_.BitmapFonts.Bitmap_initialize = Bitmap.prototype.initialize;
+_TDS_.BitmapFonts.Bitmap_drawText = Bitmap.prototype.drawText;
+_TDS_.BitmapFonts.Bitmap_measureTextWidth = Bitmap.prototype.measureTextWidth;
+
+Bitmap.prototype.initialize = function(width, height) {
+    _TDS_.BitmapFonts.Bitmap_initialize.call(this, width, height);
+    this._bitmapFont = null;
+    this._useBitmapFont = true;
+    this._bitmapFontColor = null;
+};
+
 Object.defineProperty(Bitmap.prototype, "bitmapFontColor", {
-    get: function () {
+    get: function() {
         return this._bitmapFontColor;
     },
-    set: function (t) {
-        Array.isArray(t) ? t.equals(this._bitmapFontColor) || ((this._bitmapFontColor = t), this.updateBitmapFont()) : this._bitmapFontColor !== t && ((this._bitmapFontColor = t), this.updateBitmapFont());
+    set: function(value) {
+        if (Array.isArray(value)) {
+            if (!value.equals(this._bitmapFontColor)) {
+                this._bitmapFontColor = value;
+                this.updateBitmapFont();
+            }
+        } else {
+            if (this._bitmapFontColor !== value) {
+                this._bitmapFontColor = value;
+                this.updateBitmapFont();
+            }
+        }
     },
-    configurable: true,
-}),
-(Bitmap.prototype.isUsingBitmapFont = function () {
-    return this._useBitmapFont;
-}),
-(Bitmap.prototype.measureTextWidth = function (t, a = false) {
-    return this.isUsingBitmapFont() ? this.measureBitmapFontText(t, a).width : _TDS_.BitmapFonts.Bitmap_measureTextWidth.call(this, t);
-}),
-(Bitmap.prototype.measureBitmapFontText = function (t, a = false) {
-    a && this.updateBitmapFont();
-    var e = { width: 0, height: 0 },
-        i = this._bitmapFont;
-    if (i && t !== undefined) {
-        e.height = i.fontHeight;
-        for (var n = t.toString().split(""), o = 0; o < n.length; o++) {
-            var s = i.atlas.characters[n[o]];
-            e.width += s ? s.rect.w : i.spaceWidth;
-        }
-    }
-    return e;
-}),
-(Bitmap.prototype.drawText = function (t, a, e, i, n, o) {
-    this.isUsingBitmapFont() ? this.drawBitmapFontText(t, a, e, i, n, o) : _TDS_.BitmapFonts.Bitmap_drawText.call(this, t, a, e, i, n, o);
-}),
-(Bitmap.prototype.updateBitmapFont = function () {
-    if (BitmapFontManager.doesBitmapFontExist(this.fontFace))
-        if (this._bitmapFont) {
-            var t = this._bitmapFont;
-            (t.name === this.fontFace && t.size === this.fontSize && t.color.equals(this._bitmapFontColor)) || (this._bitmapFont = BitmapFontManager.makeBitmapFontObject(this.fontFace, this.fontSize, this._bitmapFontColor));
-        } else this._bitmapFont = BitmapFontManager.makeBitmapFontObject(this.fontFace, this.fontSize, this._bitmapFontColor);
-    else this._bitmapFont = null;
-}),
-(Bitmap.prototype.drawBitmapFontText = function (t, a, e, i, n, o) {
-    this.updateBitmapFont();
-    var s = this._bitmapFont;
-    if (s && t !== undefined) {
-        var r = s.bitmap,
-            p = a,
-            m = e + n - (n - 0.7 * s.fontHeight) / 2;
-        if ("center" === o) p += (i - this.measureTextWidth(t)) / 2;
-        if ("right" === o) p += i - this.measureTextWidth(t);
-        for (var h = t.toString().split(""), c = 0, l = 0; l < h.length; l++) {
-            var B = h[l],
-                F = s.atlas.characters[B];
-            if (F) {
-                var _ = F.sourceSize.h - s.fontHeight,
-                    f = F.rect,
-                    g = (n - s.fontHeight) / 4,
-                    u = m - f.h + _ + g;
-                this.blt(r, f.x, f.y, f.w, f.h, p + c, u), (c += f.w);
-            } else c += s.spaceWidth;
-        }
-    }
-}),
-(Bitmap.prototype.forceTone = function (t, a, e) {
-    if ((t || a || e) && this.width > 0 && this.height > 0) {
-        for (var i = this._context, n = i.getImageData(0, 0, this.width, this.height), o = n.data, s = 0; s < o.length; s += 4) (o[s + 0] = t), (o[s + 1] = a), (o[s + 2] = e);
-        i.putImageData(n, 0, 0), this._setDirty();
-    }
-}),
-(_TDS_.BitmapFonts.Window_Base_resetFontSettings = Window_Base.prototype.resetFontSettings),
-(_TDS_.BitmapFonts.Window_Base_processEscapeCharacter = Window_Base.prototype.processEscapeCharacter),
-(Window_Base.prototype.resetFontSettings = function () {
-    _TDS_.BitmapFonts.Window_Base_resetFontSettings.call(this), this.contents.updateBitmapFont();
-}),
-(Window_Base.prototype.obtainMultiEscapeParam = function (textState) {
-    var arr = /^\[([^\]]*)\]/.exec(textState.text.slice(textState.index)),
-        params = [];
-    return arr && ((textState.index += arr[0].length), (params = eval(arr[0]))), params;
-}),
-(Window_Base.prototype.processEscapeCharacter = function (t, a) {
-    switch (t) {
-        case "BC":
-            var e = this.obtainMultiEscapeParam(a);
-            this.contents.bitmapFontColor = this.obtainBitmapFontColor(e);
-    }
-    _TDS_.BitmapFonts.Window_Base_processEscapeCharacter.call(this, t, a);
-}),
-(Window_Base.prototype.obtainBitmapFontColor = function (t) {
-    return t.length > 0 ? (1 === t.length ? BitmapFontManager.hexToRGB(this.textColor(t[0])) : t) : null;
-}),
-(Window_Base.prototype.processNormalCharacter = function (t) {
-    var a = t.text[t.index++],
-        e = this.textWidth(a);
-    this.contents.drawText(a, t.x, t.y, 2 * e, t.height), (t.x += e);
+    configurable: true
 });
+
+Bitmap.prototype.isUsingBitmapFont = function() {
+    return this._useBitmapFont;
+};
+
+Bitmap.prototype.measureTextWidth = function(text, forceUpdate = false) {
+    if (this.isUsingBitmapFont()) {
+        return this.measureBitmapFontText(text, forceUpdate).width;
+    } else {
+        return _TDS_.BitmapFonts.Bitmap_measureTextWidth.call(this, text);
+    }
+};
+
+Bitmap.prototype.measureBitmapFontText = function(text, forceUpdate = false) {
+    if (forceUpdate) {
+        this.updateBitmapFont();
+    }
+    
+    var measurements = { width: 0, height: 0 };
+    var fontData = this._bitmapFont;
+    
+    if (fontData && text !== undefined) {
+        measurements.height = fontData.fontHeight;
+        var characters = text.toString().split("");
+        
+        for (var i = 0; i < characters.length; i++) {
+            var charData = fontData.atlas.characters[characters[i]];
+            measurements.width += charData ? charData.rect.w : fontData.spaceWidth;
+        }
+    }
+    
+    return measurements;
+};
+
+Bitmap.prototype.drawText = function(text, x, y, maxWidth, lineHeight, align) {
+    if (this.isUsingBitmapFont()) {
+        this.drawBitmapFontText(text, x, y, maxWidth, lineHeight, align);
+    } else {
+        _TDS_.BitmapFonts.Bitmap_drawText.call(this, text, x, y, maxWidth, lineHeight, align);
+    }
+};
+
+Bitmap.prototype.updateBitmapFont = function() {
+    if (BitmapFontManager.doesBitmapFontExist(this.fontFace)) {
+        if (this._bitmapFont) {
+            var currentFont = this._bitmapFont;
+            if (!(currentFont.name === this.fontFace &&
+                  currentFont.size === this.fontSize &&
+                  currentFont.color.equals(this._bitmapFontColor))) {
+                this._bitmapFont = BitmapFontManager.makeBitmapFontObject(
+                    this.fontFace,
+                    this.fontSize,
+                    this._bitmapFontColor
+                );
+            }
+        } else {
+            this._bitmapFont = BitmapFontManager.makeBitmapFontObject(
+                this.fontFace,
+                this.fontSize,
+                this._bitmapFontColor
+            );
+        }
+    } else {
+        this._bitmapFont = null;
+    }
+};
+
+Bitmap.prototype.drawBitmapFontText = function(text, x, y, maxWidth, lineHeight, align) {
+    this.updateBitmapFont();
+    var fontData = this._bitmapFont;
+    
+    if (fontData && text !== undefined) {
+        var fontBitmap = fontData.bitmap;
+        var drawX = x;
+        var drawY = y + lineHeight - (lineHeight - 0.7 * fontData.fontHeight) / 2;
+        
+        if (align === "center") {
+            drawX += (maxWidth - this.measureTextWidth(text)) / 2;
+        }
+        if (align === "right") {
+            drawX += maxWidth - this.measureTextWidth(text);
+        }
+        
+        var characters = text.toString().split("");
+        var currentX = 0;
+        
+        for (var i = 0; i < characters.length; i++) {
+            var character = characters[i];
+            var charData = fontData.atlas.characters[character];
+            
+            if (charData) {
+                var heightDiff = charData.sourceSize.h - fontData.fontHeight;
+                var charRect = charData.rect;
+                var yOffset = (lineHeight - fontData.fontHeight) / 4;
+                var charY = drawY - charRect.h + heightDiff + yOffset;
+                
+                this.blt(fontBitmap, charRect.x, charRect.y, charRect.w, charRect.h, drawX + currentX, charY);
+                currentX += charRect.w;
+            } else {
+                currentX += fontData.spaceWidth;
+            }
+        }
+    }
+};
+
+/**
+ * Force a specific RGB tone on the bitmap (replaces colors)
+ */
+Bitmap.prototype.forceTone = function(red, green, blue) {
+    if ((red || green || blue) && this.width > 0 && this.height > 0) {
+        var context = this._context;
+        var imageData = context.getImageData(0, 0, this.width, this.height);
+        var pixels = imageData.data;
+        
+        for (var i = 0; i < pixels.length; i += 4) {
+            pixels[i + 0] = red;   // Red channel
+            pixels[i + 1] = green; // Green channel
+            pixels[i + 2] = blue;  // Blue channel
+        }
+        
+        context.putImageData(imageData, 0, 0);
+        this._setDirty();
+    }
+};
+
+//=============================================================================
+// Window_Base
+//=============================================================================
+
+_TDS_.BitmapFonts.Window_Base_resetFontSettings = Window_Base.prototype.resetFontSettings;
+_TDS_.BitmapFonts.Window_Base_processEscapeCharacter = Window_Base.prototype.processEscapeCharacter;
+
+Window_Base.prototype.resetFontSettings = function() {
+    _TDS_.BitmapFonts.Window_Base_resetFontSettings.call(this);
+    this.contents.updateBitmapFont();
+};
+
+Window_Base.prototype.obtainMultiEscapeParam = function(textState) {
+    var match = /^\[([^\]]*)\]/.exec(textState.text.slice(textState.index));
+    var params = [];
+    
+    if (match) {
+        textState.index += match[0].length;
+        params = eval(match[0]);
+    }
+    
+    return params;
+};
+
+Window_Base.prototype.processEscapeCharacter = function(code, textState) {
+    switch (code) {
+        case "BC":
+            var colorParams = this.obtainMultiEscapeParam(textState);
+            this.contents.bitmapFontColor = this.obtainBitmapFontColor(colorParams);
+            break;
+    }
+    _TDS_.BitmapFonts.Window_Base_processEscapeCharacter.call(this, code, textState);
+};
+
+Window_Base.prototype.obtainBitmapFontColor = function(params) {
+    if (params.length > 0) {
+        if (params.length === 1) {
+            return BitmapFontManager.hexToRGB(this.textColor(params[0]));
+        } else {
+            return params;
+        }
+    } else {
+        return null;
+    }
+};
+
+Window_Base.prototype.processNormalCharacter = function(textState) {
+    var character = textState.text[textState.index++];
+    var characterWidth = this.textWidth(character);
+    this.contents.drawText(character, textState.x, textState.y, 2 * characterWidth, textState.height);
+    textState.x += characterWidth;
+};
